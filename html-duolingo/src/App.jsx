@@ -118,15 +118,15 @@ function AppContent() {
   }
 
   // Если пользователь не авторизован, показываем страницы авторизации
-  if (!user) {
-    return (
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    );
-  }
+  // if (!user) {
+  //   return (
+  //     <Routes>
+  //       <Route path="/login" element={<Login />} />
+  //       <Route path="/register" element={<Register />} />
+  //       <Route path="*" element={<Navigate to="/login" replace />} />
+  //     </Routes>
+  //   );
+  // }
 
   // Если пользователь авторизован, показываем полное приложение
   return (
@@ -135,8 +135,8 @@ function AppContent() {
       <main className="container mx-auto px-4 py-8 transition-all duration-300">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          {/* <Route path="/login" element={<Login />} /> */}
+          {/* <Route path="/register" element={<Register />} /> */}
           <Route path="/profile" element={<Profile />} />
           <Route path="/reference" element={<Reference />} />
           <Route path="/achievements" element={<AchievementsPage />} />
