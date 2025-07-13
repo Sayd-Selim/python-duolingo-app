@@ -3,15 +3,18 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useProgress } from '../context/ProgressContext';
+import { getRandomTasks } from '../data/practiceTasks';
 
 function Practice() {
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [currentTask, setCurrentTask] = useState(0);
   const [showHint, setShowHint] = useState(false);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [taskHistory, setTaskHistory] = useState([]);
   const { user } = useAuth();
-  const { completedLessons, lessonProgress, refreshUserProgress } = useProgress();
+  const { completedLessons, lessonProgress, refreshUserProgress, isLessonLocked } = useProgress();
 
   console.log('🔄 Practice компонент перерендерился:', {
     completedLessons,
@@ -19,7 +22,7 @@ function Practice() {
     user: user?.userId
   });
 
-  // Доступные уроки (можно расширить)
+  // Доступные уроки (соответствуют реальным урокам курса)
   const availableLessons = useMemo(() => [
     {
       id: 1,
@@ -30,23 +33,107 @@ function Practice() {
     },
     {
       id: 2,
-      title: 'Урок 2: Переменные',
-      description: 'Работа с переменными, типы данных',
-      topics: ['переменные', 'строки', 'числа'],
+      title: 'Урок 2: Переменные и ввод данных',
+      description: 'Работа с переменными, функции print() и input()',
+      topics: ['переменные', 'input()', 'print()'],
       difficulty: 'Начинающий',
     },
     {
       id: 3,
-      title: 'Урок 3: Ввод данных',
-      description: 'Функция input(), преобразование типов',
-      topics: ['input()', 'int()', 'str()'],
+      title: 'Урок 3: Типы данных',
+      description: 'Вы должны понимать, с чем работаешь.',
+      topics: ['Числа', 'строки', 'логические значения'],
       difficulty: 'Начинающий',
-    }
+    },
+    // {
+    //   id: 4,
+    //   title: 'Урок 4: Условные операторы',
+    //   description: 'if, elif, else, сравнения',
+    //   topics: ['if', 'elif', 'else', 'сравнения'],
+    //   difficulty: 'Начинающий',
+    // },
+    // {
+    //   id: 5,
+    //   title: 'Урок 5: Циклы for и while',
+    //   description: 'Циклы, итерации, range()',
+    //   topics: ['for', 'while', 'циклы', 'range()'],
+    //   difficulty: 'Начинающий',
+    // },
+    // {
+    //   id: 6,
+    //   title: 'Урок 6: Списки и кортежи',
+    //   description: 'Работа с последовательностями',
+    //   topics: ['списки', 'кортежи', 'индексы'],
+    //   difficulty: 'Средний',
+    // },
+    // {
+    //   id: 7,
+    //   title: 'Урок 7: Словари и множества',
+    //   description: 'Структуры данных Python',
+    //   topics: ['словари', 'множества', 'ключи'],
+    //   difficulty: 'Средний',
+    // },
+    // {
+    //   id: 8,
+    //   title: 'Урок 8: Функции',
+    //   description: 'Создание и использование функций',
+    //   topics: ['функции', 'параметры', 'return'],
+    //   difficulty: 'Средний',
+    // },
+    // {
+    //   id: 9,
+    //   title: 'Урок 9: Работа с файлами',
+    //   description: 'Чтение и запись файлов',
+    //   topics: ['файлы', 'open()', 'read()', 'write()'],
+    //   difficulty: 'Средний',
+    // },
+    // {
+    //   id: 10,
+    //   title: 'Урок 10: Обработка исключений',
+    //   description: 'try, except, finally',
+    //   topics: ['try', 'except', 'исключения'],
+    //   difficulty: 'Средний',
+    // },
+    // {
+    //   id: 11,
+    //   title: 'Урок 11: Модули и пакеты',
+    //   description: 'Импорт модулей, создание пакетов',
+    //   topics: ['import', 'модули', 'пакеты'],
+    //   difficulty: 'Средний',
+    // },
+    // {
+    //   id: 12,
+    //   title: 'Урок 12: ООП основы',
+    //   description: 'Классы, объекты, наследование',
+    //   topics: ['классы', 'объекты', 'наследование'],
+    //   difficulty: 'Продвинутый',
+    // },
+    // {
+    //   id: 13,
+    //   title: 'Урок 13: Работа с библиотеками',
+    //   description: 'Популярные библиотеки Python',
+    //   topics: ['библиотеки', 'pip', 'установка'],
+    //   difficulty: 'Продвинутый',
+    // },
+    // {
+    //   id: 14,
+    //   title: 'Урок 14: Практический проект',
+    //   description: 'Создание реального проекта',
+    //   topics: ['проект', 'интеграция', 'деплой'],
+    //   difficulty: 'Продвинутый',
+    // },
+    // {
+    //   id: 15,
+    //   title: 'Урок 15: Продвинутые темы',
+    //   description: 'Декораторы, генераторы, контекстные менеджеры',
+    //   topics: ['декораторы', 'генераторы', 'контекст'],
+    //   difficulty: 'Продвинутый',
+    // }
   ], []);
 
-  // Только завершённые уроки доступны для практики
+  // Доступные уроки для практики (завершенные или разблокированные)
   const unlockedLessons = useMemo(() => {
-    // Проверяем разные способы определения завершенных уроков
+    // Получаем завершенные уроки
     const completedFromArray = completedLessons || [];
     const completedFromProgress = Object.entries(lessonProgress || {})
       .filter(([lessonId, progress]) => progress >= 100)
@@ -54,204 +141,31 @@ function Practice() {
     
     const allCompleted = [...new Set([...completedFromArray, ...completedFromProgress])];
     
+    // Получаем разблокированные уроки (уроки, которые доступны в курсе)
+    const unlockedLessonIds = [];
+    for (let i = 1; i <= 15; i++) { // Проверяем все уроки курса
+      if (!isLessonLocked(i)) { // Если урок не заблокирован
+        unlockedLessonIds.push(i);
+      }
+    }
+    
+    // Объединяем завершенные и разблокированные уроки
+    const availableLessonIds = [...new Set([...allCompleted, ...unlockedLessonIds])];
+    
     console.log('🔍 Проверка доступных уроков для практики:', {
       completedLessons: completedFromArray,
       lessonProgress,
       completedFromProgress,
       allCompleted,
+      unlockedLessonIds,
+      availableLessonIds,
       availableLessons: availableLessons.map(l => ({ id: l.id, title: l.title })),
-      unlocked: availableLessons.filter(lesson => allCompleted.includes(lesson.id))
+      unlocked: availableLessons.filter(lesson => availableLessonIds.includes(lesson.id))
     });
     
-    return availableLessons.filter(lesson => allCompleted.includes(lesson.id));
-  }, [availableLessons, completedLessons, lessonProgress]);
+    return availableLessons.filter(lesson => availableLessonIds.includes(lesson.id));
+  }, [availableLessons, completedLessons, lessonProgress, isLessonLocked]);
 
-  // Генератор задач для разных уроков
-  const generateTasks = useMemo(() => ({
-    1: () => {
-      const tasks = [
-        {
-          title: 'Приветствие',
-          content: '💻 Создайте программу, которая выводит приветствие "Добро пожаловать в Python!"',
-          code: 'print("Добро пожаловать в Python!")',
-          explanation: '🔍 Используйте функцию print() с текстом в кавычках',
-          expectedOutput: 'Добро пожаловать в Python!',
-          hint: '💡 print("ваш текст") - не забудьте кавычки!'
-        },
-        {
-          title: 'Множественные сообщения',
-          content: '💻 Напишите программу, которая выводит:\n1. "Привет!"\n2. "Как дела?"\n3. "Отлично!"',
-          code: 'print("Привет!")\nprint("Как дела?")\nprint("Отлично!")',
-          explanation: '🔍 Каждый print() выводит новую строку',
-          expectedOutput: 'Привет!\nКак дела?\nОтлично!',
-          hint: '💡 Используйте три print() один за другим'
-        },
-        {
-          title: 'Программа с комментарием',
-          content: '💻 Создайте программу с комментарием, которая выводит "Моя программа работает!"',
-          code: '# Это моя программа\nprint("Моя программа работает!")',
-          explanation: '🔍 Комментарий начинается с #',
-          expectedOutput: 'Моя программа работает!',
-          hint: '💡 Начните с комментария, затем добавьте print()'
-        },
-        {
-          title: 'Красивое оформление',
-          content: '💻 Напишите программу, которая выводит:\n1. "================"\n2. "МОЯ ПРОГРАММА"\n3. "================"',
-          code: 'print("================")\nprint("МОЯ ПРОГРАММА")\nprint("================")',
-          explanation: '🔍 Символы = создают рамку',
-          expectedOutput: '================\nМОЯ ПРОГРАММА\n================',
-          hint: '💡 Используйте символы = для создания рамки'
-        },
-        {
-          title: 'Комментарий в строке',
-          content: '💻 Напишите программу, которая выводит "Результат: 100" с комментарием в той же строке',
-          code: 'print("Результат: 100")  # Выводим результат',
-          explanation: '🔍 Комментарий можно писать после кода',
-          expectedOutput: 'Результат: 100',
-          hint: '💡 Добавьте # после кода в той же строке'
-        },
-        {
-          title: 'Приветствие пользователя',
-          content: '💻 Создайте программу, которая выводит "Привет, программист!"',
-          code: 'print("Привет, программист!")',
-          explanation: '🔍 Простое использование print()',
-          expectedOutput: 'Привет, программист!',
-          hint: '💡 print("Привет, программист!")'
-        },
-        {
-          title: 'Информационная программа',
-          content: '💻 Напишите программу, которая выводит:\n1. "Информация о программе"\n2. "Версия: 1.0"\n3. "Автор: Вы"',
-          code: 'print("Информация о программе")\nprint("Версия: 1.0")\nprint("Автор: Вы")',
-          explanation: '🔍 Три отдельные строки с информацией',
-          expectedOutput: 'Информация о программе\nВерсия: 1.0\nАвтор: Вы',
-          hint: '💡 Используйте три print() для трех строк'
-        },
-        {
-          title: 'Программа с несколькими комментариями',
-          content: '💻 Создайте программу с двумя комментариями, которая выводит "Программа завершена"',
-          code: '# Начало программы\nprint("Программа завершена")  # Конец программы',
-          explanation: '🔍 Комментарии в начале и в конце строки',
-          expectedOutput: 'Программа завершена',
-          hint: '💡 Добавьте комментарий в начале и в конце строки'
-        }
-      ];
-      return tasks.sort(() => Math.random() - 0.5).slice(0, 5); // Перемешиваем и берем 5
-    },
-    2: () => {
-      const tasks = [
-        {
-          title: 'Создание переменной',
-          content: '💻 Создайте переменную name со значением "Анна" и выведите её',
-          code: 'name = "Анна"\nprint(name)',
-          explanation: '🔍 Используйте = для присваивания значения',
-          expectedOutput: 'Анна',
-          hint: '💡 name = "Анна" - создает переменную'
-        },
-        {
-          title: 'Числовая переменная',
-          content: '💻 Создайте переменную age со значением 25 и выведите её',
-          code: 'age = 25\nprint(age)',
-          explanation: '🔍 Числа пишутся без кавычек',
-          expectedOutput: '25',
-          hint: '💡 age = 25 - создает числовую переменную'
-        },
-        {
-          title: 'Несколько переменных',
-          content: '💻 Создайте переменные name="Иван" и age=30, затем выведите обе',
-          code: 'name = "Иван"\nage = 30\nprint(name)\nprint(age)',
-          explanation: '🔍 Можно создать несколько переменных',
-          expectedOutput: 'Иван\n30',
-          hint: '💡 Создайте две переменные и выведите их'
-        },
-        {
-          title: 'Переменная с числом',
-          content: '💻 Создайте переменную score со значением 95 и выведите её',
-          code: 'score = 95\nprint(score)',
-          explanation: '🔍 Числовые переменные не нуждаются в кавычках',
-          expectedOutput: '95',
-          hint: '💡 score = 95 - создает числовую переменную'
-        },
-        {
-          title: 'Строковая переменная',
-          content: '💻 Создайте переменную city со значением "Москва" и выведите её',
-          code: 'city = "Москва"\nprint(city)',
-          explanation: '🔍 Строковые переменные заключаются в кавычки',
-          expectedOutput: 'Москва',
-          hint: '💡 city = "Москва" - создает строковую переменную'
-        },
-        {
-          title: 'Множественные переменные',
-          content: '💻 Создайте переменные name="Мария", age=28, city="СПб" и выведите их',
-          code: 'name = "Мария"\nage = 28\ncity = "СПб"\nprint(name)\nprint(age)\nprint(city)',
-          explanation: '🔍 Можно создать много переменных разных типов',
-          expectedOutput: 'Мария\n28\nСПб',
-          hint: '💡 Создайте три переменные и выведите их по очереди'
-        },
-        {
-          title: 'Переменная с комментарием',
-          content: '💻 Создайте переменную price со значением 1500 и выведите её с комментарием',
-          code: 'price = 1500  # Цена товара\nprint(price)',
-          explanation: '🔍 Комментарии можно добавлять к переменным',
-          expectedOutput: '1500',
-          hint: '💡 Добавьте комментарий после создания переменной'
-        }
-      ];
-      return tasks.sort(() => Math.random() - 0.5).slice(0, 5);
-    },
-    3: () => {
-      const tasks = [
-        {
-          title: 'Ввод имени',
-          content: '💻 Создайте программу, которая запрашивает имя и выводит "Привет, [имя]!"',
-          code: 'name = input("Введите имя: ")\nprint("Привет, " + name + "!")',
-          explanation: '🔍 input() запрашивает ввод, + соединяет строки',
-          expectedOutput: 'Привет, [введенное имя]!',
-          hint: '💡 Используйте input() и сложение строк'
-        },
-        {
-          title: 'Ввод числа',
-          content: '💻 Создайте программу, которая запрашивает число и выводит его удвоенное значение',
-          code: 'number = int(input("Введите число: "))\nprint(number * 2)',
-          explanation: '🔍 int() преобразует строку в число',
-          expectedOutput: '[удвоенное число]',
-          hint: '💡 Используйте int(input()) для ввода числа'
-        },
-        {
-          title: 'Ввод возраста',
-          content: '💻 Создайте программу, которая запрашивает возраст и выводит "Вам [возраст] лет"',
-          code: 'age = input("Введите ваш возраст: ")\nprint("Вам " + age + " лет")',
-          explanation: '🔍 input() возвращает строку, которую можно соединить с другими строками',
-          expectedOutput: 'Вам [введенный возраст] лет',
-          hint: '💡 Используйте input() и сложение строк'
-        },
-        {
-          title: 'Ввод числа с вычислением',
-          content: '💻 Создайте программу, которая запрашивает число и выводит его квадрат',
-          code: 'number = int(input("Введите число: "))\nprint(number ** 2)',
-          explanation: '🔍 ** - оператор возведения в степень',
-          expectedOutput: '[квадрат числа]',
-          hint: '💡 Используйте int(input()) и оператор **'
-        },
-        {
-          title: 'Ввод двух чисел',
-          content: '💻 Создайте программу, которая запрашивает два числа и выводит их сумму',
-          code: 'a = int(input("Введите первое число: "))\nb = int(input("Введите второе число: "))\nprint(a + b)',
-          explanation: '🔍 Можно запрашивать несколько значений',
-          expectedOutput: '[сумма двух чисел]',
-          hint: '💡 Используйте два int(input()) и сложение'
-        },
-        {
-          title: 'Ввод города',
-          content: '💻 Создайте программу, которая запрашивает город и выводит "Вы живете в [город]"',
-          code: 'city = input("Введите ваш город: ")\nprint("Вы живете в " + city)',
-          explanation: '🔍 input() для строковых данных',
-          expectedOutput: 'Вы живете в [введенный город]',
-          hint: '💡 Используйте input() и сложение строк'
-        }
-      ];
-      return tasks.sort(() => Math.random() - 0.5).slice(0, 5);
-    }
-  }), []);
 
   const [currentTasks, setCurrentTasks] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -274,22 +188,14 @@ function Practice() {
     }
     
     console.log('Генерируем задачи для урока:', selectedLesson.id);
-    console.log('Доступные генераторы:', Object.keys(generateTasks));
     setIsGenerating(true);
     
     // Для отладки - убираем задержку
     setGenerationStep('Генерируем задачи...');
     await new Promise(resolve => setTimeout(resolve, 500));
     
-    // Получаем базовые задачи
-    if (!generateTasks[selectedLesson.id]) {
-      console.error('Генератор задач не найден для урока:', selectedLesson.id);
-      setIsGenerating(false);
-      setGenerationStep('');
-      return;
-    }
-    
-    let newTasks = generateTasks[selectedLesson.id]();
+    // Получаем задачи из импортированного файла
+    let newTasks = getRandomTasks(selectedLesson.id, 5);
     console.log('Сгенерированные задачи:', newTasks);
     
     if (!newTasks || newTasks.length === 0) {
@@ -312,16 +218,20 @@ function Practice() {
     setCurrentTask(0);
     setIsCompleted(false);
     setShowHint(false);
+    setShowAnswer(false);
+    setShowInstructions(false);
     setTaskHistory([]);
     setIsGenerating(false);
     setGenerationStep('');
-  }, [selectedLesson, generateTasks]);
+  }, [selectedLesson]);
 
   // Переход к следующей задаче
   const nextTask = () => {
     if (currentTask < currentTasks.length - 1) {
       setCurrentTask(currentTask + 1);
       setShowHint(false);
+      setShowAnswer(false);
+      setShowInstructions(false);
     } else {
       setIsCompleted(true);
     }
@@ -332,6 +242,8 @@ function Practice() {
     if (currentTask > 0) {
       setCurrentTask(currentTask - 1);
       setShowHint(false);
+      setShowAnswer(false);
+      setShowInstructions(false);
     }
   };
 
@@ -348,6 +260,8 @@ function Practice() {
     setCurrentTask(0);
     setIsCompleted(false);
     setShowHint(false);
+    setShowAnswer(false);
+    setShowInstructions(false);
     setTaskHistory([]);
     setIsGenerating(false);
     setGenerationStep('');
@@ -364,13 +278,7 @@ function Practice() {
           <h1 className="text-4xl font-bold text-gray-800 mb-4">💻 Практика</h1>
           <p className="text-xl text-gray-600 mb-4">Выберите урок для практики</p>
           <div className="flex justify-center space-x-4">
-            <button
-              onClick={refreshUserProgress}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center space-x-2"
-            >
-              <span>🔄</span>
-              <span>Обновить прогресс</span>
-            </button>
+           
             <div className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg">
               Завершено уроков: {unlockedLessons.length}
             </div>
@@ -385,45 +293,77 @@ function Practice() {
                 key={lesson.id}
                 whileHover={{ scale: isCompleted ? 1.02 : 1 }}
                 whileTap={{ scale: isCompleted ? 0.98 : 1 }}
-                className={`bg-white rounded-xl shadow-lg p-6 border border-gray-200 transition-all duration-200 ${
+                className={`bg-white rounded-2xl shadow-lg p-6 transition-all duration-300 ${
                   isCompleted 
-                    ? 'hover:shadow-xl cursor-pointer' 
-                    : 'opacity-60 cursor-not-allowed'
+                    ? 'hover:shadow-2xl cursor-pointer border-2 border-transparent hover:border-blue-200' 
+                    : 'opacity-60 cursor-not-allowed border-2 border-gray-100'
                 }`}
                 onClick={() => isCompleted && selectLesson(lesson)}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-semibold text-gray-800">{lesson.title}</h3>
-                  <span className={`text-sm px-2 py-1 rounded-full ${
-                    isCompleted 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    {isCompleted ? 'Завершен' : lesson.difficulty}
-                  </span>
+                {/* Заголовок и статус */}
+                <div className="flex items-start justify-between mb-6">
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-800 mb-2 leading-tight">{lesson.title}</h3>
+                    <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      isCompleted 
+                        ? 'bg-green-100 text-green-700 border border-green-200' 
+                        : 'bg-gray-100 text-gray-600 border border-gray-200'
+                    }`}>
+                      <span className={`w-2 h-2 rounded-full mr-2 ${
+                        isCompleted ? 'bg-green-500' : 'bg-gray-400'
+                      }`}></span>
+                      {isCompleted ? 'Завершен' : lesson.difficulty}
+                    </div>
+                  </div>
                 </div>
-                <p className="text-gray-600 mb-4">{lesson.description}</p>
-                <div className="flex flex-wrap gap-2 mb-4">
+
+                {/* Описание */}
+                <p className="text-gray-600 mb-6 leading-relaxed text-sm">{lesson.description}</p>
+
+                {/* Топики */}
+                <div className="flex flex-wrap gap-2 mb-6">
                   {lesson.topics.map((topic, index) => (
                     <span
                       key={index}
-                      className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full"
+                      className={`text-xs px-3 py-1.5 rounded-full font-medium ${
+                        isCompleted 
+                          ? 'bg-blue-50 text-blue-700 border border-blue-200' 
+                          : 'bg-gray-50 text-gray-500 border border-gray-200'
+                      }`}
                     >
                       {topic}
                     </span>
                   ))}
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className={`text-sm font-medium ${
-                    isCompleted ? 'text-green-600' : 'text-gray-500'
-                  }`}>
-                    {isCompleted ? '✓ Доступен' : '🔒 Завершите урок'}
-                  </span>
+
+                {/* Статус и кнопка */}
+                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                  <div className="flex items-center">
+                    <span className={`text-sm font-medium flex items-center ${
+                      isCompleted ? 'text-green-600' : 'text-gray-500'
+                    }`}>
+                      {isCompleted ? (
+                        <>
+                          <span className="w-4 h-4 bg-green-500 rounded-full mr-2 flex items-center justify-center">
+                            <span className="text-white text-xs">✓</span>
+                          </span>
+                          Доступен
+                        </>
+                      ) : (
+                        <>
+                          <span className="w-4 h-4 bg-gray-400 rounded-full mr-2 flex items-center justify-center">
+                            <span className="text-white text-xs">🔒</span>
+                          </span>
+                          Завершите урок
+                        </>
+                      )}
+                    </span>
+                  </div>
                   <button 
-                    className={`px-4 py-2 rounded-lg transition-all duration-200 ${
+                    className={`px-5 py-2.5 rounded-xl font-medium transition-all duration-200 ${
                       isCompleted
-                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        ? 'bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5'
+                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     }`}
                     disabled={!isCompleted}
                   >
@@ -547,54 +487,122 @@ function Practice() {
           </div>
 
           {/* Ожидаемый результат */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-center mb-2">
-              <span className="text-xl mr-2">🎯</span>
-              <span className="text-blue-800 font-semibold">Ожидаемый результат:</span>
+          <div className="bg-blue-50 border-l-4 border-blue-400 rounded-lg p-6 shadow-sm">
+            <div className="flex items-center mb-4">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                <span className="text-xl">🎯</span>
+              </div>
+              <span className="text-blue-900 font-semibold text-lg">Ожидаемый результат</span>
             </div>
-            <div className="bg-gray-900 rounded-lg p-4">
+            <div className="bg-gray-900 rounded-lg p-4 shadow-inner">
               <pre className="text-green-400 text-lg font-mono">
                 {currentTaskData.expectedOutput}
               </pre>
             </div>
           </div>
 
-          {/* Инструкции */}
-          <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-4">
-            <div className="flex items-center mb-2">
-              <span className="text-xl mr-2">📝</span>
-              <span className="text-yellow-800 font-semibold">Инструкции:</span>
-            </div>
-            <ol className="text-yellow-700 text-lg space-y-2">
-              <li>1. Откройте ваш редактор кода</li>
-              <li>2. Создайте новый файл .py</li>
-              <li>3. Напишите код согласно заданию</li>
-              <li>4. Запустите программу</li>
-              <li>5. Сравните результат с ожидаемым</li>
-              <li>6. Нажмите "Следующая задача" когда готовы</li>
-            </ol>
-          </div>
-
           {/* Кнопки */}
           <div className="flex space-x-4">
             <button
+              onClick={() => setShowInstructions(!showInstructions)}
+              className="px-6 py-3 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+            >
+              <span>📝</span>
+              <span>{showInstructions ? 'Скрыть инструкции' : 'Показать инструкции'}</span>
+            </button>
+            <button
               onClick={() => setShowHint(!showHint)}
-              className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center space-x-2 shadow-lg"
+              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
             >
               <span>💡</span>
               <span>Подсказка</span>
             </button>
+            <button
+              onClick={() => setShowAnswer(!showAnswer)}
+              className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+            >
+              <span>🔍</span>
+              <span>{showAnswer ? 'Скрыть ответ' : 'Показать ответ'}</span>
+            </button>
           </div>
 
+          {showInstructions && (
+            <div className="bg-amber-50 border-l-4 border-amber-400 rounded-lg p-6 shadow-sm">
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-xl">📝</span>
+                </div>
+                <span className="text-amber-900 font-semibold text-lg">Инструкции</span>
+              </div>
+              <ol className="text-amber-800 text-lg space-y-3">
+                <li className="flex items-start">
+                  <span className="w-6 h-6 bg-amber-200 rounded-full flex items-center justify-center text-amber-900 font-bold text-sm mr-3 mt-0.5">1</span>
+                  <span>Откройте ваш редактор кода</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="w-6 h-6 bg-amber-200 rounded-full flex items-center justify-center text-amber-900 font-bold text-sm mr-3 mt-0.5">2</span>
+                  <span>Создайте новый файл .py</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="w-6 h-6 bg-amber-200 rounded-full flex items-center justify-center text-amber-900 font-bold text-sm mr-3 mt-0.5">3</span>
+                  <span>Напишите код согласно заданию</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="w-6 h-6 bg-amber-200 rounded-full flex items-center justify-center text-amber-900 font-bold text-sm mr-3 mt-0.5">4</span>
+                  <span>Запустите программу</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="w-6 h-6 bg-amber-200 rounded-full flex items-center justify-center text-amber-900 font-bold text-sm mr-3 mt-0.5">5</span>
+                  <span>Сравните результат с ожидаемым</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="w-6 h-6 bg-amber-200 rounded-full flex items-center justify-center text-amber-900 font-bold text-sm mr-3 mt-0.5">6</span>
+                  <span>Нажмите "Следующая задача" когда готовы</span>
+                </li>
+              </ol>
+            </div>
+          )}
+
           {showHint && (
-            <div className="bg-gradient-to-r from-blue-100 to-indigo-100 border border-blue-300 rounded-lg p-4">
-              <div className="flex items-center mb-2">
-                <span className="text-xl mr-2">💡</span>
-                <span className="text-blue-800 font-semibold">Подсказка</span>
+            <div className="bg-blue-50 border-l-4 border-blue-400 rounded-lg p-6 shadow-sm">
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-xl">💡</span>
+                </div>
+                <span className="text-blue-900 font-semibold text-lg">Подсказка</span>
               </div>
               <div className="text-blue-800 text-lg space-y-3">
                 {currentTaskData.hint.split('\n').map((line, index) => (
                   <p key={index} className="leading-relaxed">
+                    {line}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {showAnswer && (
+            <div className="bg-green-50 border-l-4 border-green-400 rounded-lg p-6 shadow-sm">
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-xl">🔍</span>
+                </div>
+                <span className="text-green-900 font-semibold text-lg">Решение</span>
+              </div>
+              <div className="bg-gray-900 rounded-lg p-4 mb-4 shadow-inner">
+                <pre className="text-green-400 text-lg font-mono">
+                  {currentTaskData.code}
+                </pre>
+              </div>
+              <div className="text-green-800 text-lg space-y-3">
+                <div className="flex items-start mb-4">
+                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-lg">📖</span>
+                  </div>
+                  <span className="font-semibold text-green-900">Объяснение</span>
+                </div>
+                {currentTaskData.explanation.split('\n').map((line, index) => (
+                  <p key={index} className="leading-relaxed ml-11">
                     {line}
                   </p>
                 ))}
@@ -612,7 +620,7 @@ function Practice() {
           className={`px-6 py-3 rounded-lg transition-all duration-200 flex items-center space-x-2 ${
             currentTask === 0
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-gradient-to-r from-gray-600 to-gray-700 text-white hover:from-gray-700 hover:to-gray-800 shadow-lg'
+              : 'bg-gray-600 text-white hover:bg-gray-700 shadow-md hover:shadow-lg transform hover:-translate-y-0.5'
           }`}
         >
           <span>←</span>
@@ -623,10 +631,10 @@ function Practice() {
           <button
             onClick={generateNewTasks}
             disabled={isGenerating}
-            className={`px-6 py-3 rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-lg ${
+            className={`px-6 py-3 rounded-lg transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
               isGenerating
                 ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                : 'bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:from-purple-600 hover:to-purple-700'
+                : 'bg-purple-500 text-white hover:bg-purple-600'
             }`}
           >
             <span>{isGenerating ? '⏳' : '🔄'}</span>
@@ -636,7 +644,7 @@ function Practice() {
           {currentTask < currentTasks.length - 1 ? (
             <button
               onClick={nextTask}
-              className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 flex items-center space-x-2 shadow-lg"
+              className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
             >
               <span>Следующая</span>
               <span>→</span>
@@ -644,7 +652,7 @@ function Practice() {
           ) : (
             <button
               onClick={nextTask}
-              className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-200 flex items-center space-x-2 shadow-lg"
+              className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-200 flex items-center space-x-2 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
             >
               <span>🎉</span>
               <span>Завершить</span>
@@ -679,7 +687,7 @@ function Practice() {
                 className={`w-full px-6 py-3 rounded-lg transition-all duration-200 ${
                   isGenerating
                     ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700'
+                    : 'bg-blue-500 text-white hover:bg-blue-600 shadow-md hover:shadow-lg transform hover:-translate-y-0.5'
                 }`}
               >
                 {isGenerating ? '⏳ Генерация...' : '🔄 Новые задачи'}

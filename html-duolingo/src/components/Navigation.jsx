@@ -32,8 +32,9 @@ const lessonsStructure = [
     title: 'Практика',
     icon: '💻',
     units: [
-      { id: 1, title: 'Расширенная практика', path: '/advanced-practice' },
-      { id: 2, title: 'Проектные задания', path: '/projects' }
+      { id: 1, title: 'Практика по урокам', path: '/practice' },
+      { id: 2, title: 'Расширенная практика', path: '/advanced-practice' },
+      { id: 3, title: 'Проектные задания', path: '/projects' }
     ]
   },
   {

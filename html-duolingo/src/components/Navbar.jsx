@@ -72,12 +72,16 @@ const Navbar = () => {
             >
               🎯 Мотивация
             </Link> */}
-            {/* <Link
+            <Link
               to="/practice"
-              className="text-gray-600 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium"
+              className={`px-3 py-2 rounded-md text-sm font-medium ${
+                isActive('/practice')
+                  ? 'text-green-600 bg-green-50'
+                  : 'text-gray-600 hover:text-green-600'
+              }`}
             >
               💻 Практика
-            </Link> */}
+            </Link>
 
             {/* Выпадающее меню подготовки к трудоустройству */}
             {/* <div className="relative">

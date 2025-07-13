@@ -88,12 +88,13 @@ export const ProgressProvider = ({ children }) => {
 
   // Проверка, заблокирован ли урок
   const isLessonLocked = useCallback((lessonId) => {
-    // Только урок 1 открыт
-    if (lessonId === 1) return false;
+    // Урок 1 всегда доступен
+    if (lessonId <= 2) return false;
     
-    // Все остальные уроки заблокированы
-    return true;
-  }, []);
+    // Остальные уроки доступны, если предыдущий завершен
+    const previousLessonId = lessonId - 1;
+    return !completedLessons.includes(previousLessonId);
+  }, [completedLessons]);
 
   // Получение прогресса урока (0-100)
   const getLessonProgress = useCallback((lessonId) => {

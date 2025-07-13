@@ -35,7 +35,7 @@ function PythonCourse() {
       const access = {};
       for (let i = 1; i <= 15; i++) {
         // В демо режиме открыты только уроки 1-3
-        access[i] = i <= 1;
+        access[i] = i <= 2;
       }
       setLessonAccess(access);
       

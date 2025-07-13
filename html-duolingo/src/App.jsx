@@ -117,9 +117,7 @@ function AppContent() {
     );
   }
 
-  // ЗАКОММЕНТИРОВАНО: Если пользователь не авторизован, показываем страницы авторизации
-  // Теперь приложение доступно всем без авторизации
-  /*
+  // Если пользователь не авторизован, показываем страницы авторизации
   if (!user) {
     return (
       <Routes>
@@ -129,7 +127,6 @@ function AppContent() {
       </Routes>
     );
   }
-  */
 
   // Если пользователь авторизован, показываем полное приложение
   return (
@@ -138,6 +135,8 @@ function AppContent() {
       <main className="container mx-auto px-4 py-8 transition-all duration-300">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/reference" element={<Reference />} />
           <Route path="/achievements" element={<AchievementsPage />} />
