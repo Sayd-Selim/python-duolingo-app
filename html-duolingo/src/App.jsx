@@ -67,10 +67,22 @@ import PersonalizationSettings from "./components/PersonalizationSettings";
 import MiniSite from "./components/MiniSite";
 import CollaborationHub from "./components/CollaborationHub";
 import PythonCourse from "./pages/PythonCourse";
+import HTMLCourse from "./pages/HTMLCourse";
+import HTMLLesson1 from "./pages/html-lessons/HTMLLesson1";
+import CSSCourse from "./pages/CSSCourse";
+import JavaScriptCourse from "./pages/JavaScriptCourse";
+import JSLibrariesCourse from "./pages/JSLibrariesCourse";
+import Courses from "./pages/Courses";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import FriendsProgress from "./components/FriendsProgress";
 import FriendsProgressPage from "./pages/FriendsProgressPage";
+import CryptoTradingCourse from "./pages/CryptoTradingCourse";
+import CryptoLesson1 from "./pages/crypto-lessons/CryptoLesson1";
+import CryptoLesson2 from "./pages/crypto-lessons/CryptoLesson2";
+import ExpressLesson1 from "./pages/express-lessons/ExpressLesson1";
+import ExpressLesson2 from "./pages/express-lessons/ExpressLesson2";
+import WebSocketLesson1 from "./pages/websocket-lessons/WebSocketLesson1";
 
 function App() {
   return (
@@ -183,6 +195,20 @@ function AppContent() {
           <Route path="/mini-site" element={<MiniSite />} />
           <Route path="/collaboration" element={<CollaborationHub />} />
           <Route path="/python-course" element={<PythonCourse />} />
+          <Route path="/html-course" element={<HTMLCourse />} />
+          <Route path="/html-course/lesson/1" element={<HTMLLesson1 />} />
+          <Route path="/css-course" element={<CSSCourse />} />
+                  <Route path="/javascript-course" element={<JavaScriptCourse />} />
+        <Route path="/js-libraries-course" element={<JSLibrariesCourse />} />
+        <Route path="/js-libraries-course/:libraryId/lesson/:lessonId" element={<JSLibrariesCourse />} />
+        <Route path="/js-libraries-course/express/lesson/1" element={<ExpressLesson1 />} />
+        <Route path="/js-libraries-course/express/lesson/2" element={<ExpressLesson2 />} />
+        <Route path="/js-libraries-course/websocket/lesson/1" element={<WebSocketLesson1 />} />
+        <Route path="/crypto-trading-course" element={<CryptoTradingCourse />} />
+        <Route path="/crypto-trading-course/unit/1" element={<CryptoLesson1 />} />
+        <Route path="/crypto-trading-course/unit/2" element={<CryptoLesson2 />} />
+        <Route path="/crypto-trading-course/unit/:unitId" element={<CryptoTradingCourse />} />
+        <Route path="/courses" element={<Courses />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

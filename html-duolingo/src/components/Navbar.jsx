@@ -25,11 +25,21 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <Link to="/" className="flex items-center">
-              <span className="text-2xl font-bold text-green-600">🐍 Python Курс</span>
+              <span className="text-2xl font-bold">🚀 S.P.E.G Academy</span>
             </Link>
           </div>
 
           <div className="flex items-center space-x-4">
+            {/* <Link
+              to="/courses"
+              className={`px-3 py-2 rounded-md text-sm font-medium ${
+                isActive('/courses')
+                  ? 'text-blue-600 bg-blue-50'
+                  : 'text-gray-600 hover:text-blue-600'
+              }`}
+            >
+              📚 Наши курсы
+            </Link> */}
             <Link
               to="/reference"
               className="text-gray-600 hover:text-green-600 px-3 py-2 rounded-md text-sm font-medium"
@@ -83,47 +93,7 @@ const Navbar = () => {
               💻 Практика
             </Link>
 
-            {/* Выпадающее меню подготовки к трудоустройству */}
-            {/* <div className="relative">
-              <button
-                onClick={() => setIsJobPrepOpen(!isJobPrepOpen)}
-                className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium ${
-                  isActive('/interview-prep') || isActive('/resume-builder')
-                    ? 'text-indigo-600 bg-indigo-50'
-                    : 'text-gray-600 hover:text-indigo-600'
-                }`}
-              >
-                <span>💼 Подготовка к работе</span>
-                <span className="text-xs">{isJobPrepOpen ? '▲' : '▼'}</span>
-              </button>
-              
-              {isJobPrepOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
-                  <Link
-                    to="/interview-prep"
-                    className={`block px-4 py-2 text-sm ${
-                      isActive('/interview-prep')
-                        ? 'bg-indigo-50 text-indigo-600'
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                    onClick={() => setIsJobPrepOpen(false)}
-                  >
-                    📝 Вопросы на собеседование
-                  </Link>
-                  <Link
-                    to="/resume-builder"
-                    className={`block px-4 py-2 text-sm ${
-                      isActive('/resume-builder')
-                        ? 'bg-indigo-50 text-indigo-600'
-                        : 'text-gray-700 hover:bg-gray-50'
-                    }`}
-                    onClick={() => setIsJobPrepOpen(false)}
-                  >
-                    📄 Создание резюме
-                  </Link>
-                </div>
-              )}
-            </div> */}
+           
             {/* <Link
               to="/collaboration"
               className={`px-4 py-2 rounded-md transition-colors ${location.pathname === '/collaboration'
@@ -145,12 +115,7 @@ const Navbar = () => {
             >
               ⭐ Премиум
             </Link> */}
-            {/* <Link
-              to="/skins"
-              className="text-gray-600 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              🎨 Скины
-            </Link> */}
+
             {/* <Link
               to="/error-analysis"
               className={`px-4 py-2 rounded-md transition-colors ${
@@ -161,6 +126,8 @@ const Navbar = () => {
             >
               📊 Анализ ошибок
             </Link> */}
+
+
             {/* <Link
               to="/personalization"
               className={`px-4 py-2 rounded-md transition-colors ${
@@ -171,19 +138,12 @@ const Navbar = () => {
             >
               🎨 Персонализация
             </Link> */}
-            {/* <Link
-              to="/mini-site"
-              className={`px-4 py-2 rounded-md transition-colors ${
-                location.pathname === '/mini-site'
-                  ? 'bg-indigo-100 text-indigo-600'
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              🌐 Мой мини-сайт
-            </Link> */}
+
+            
+            
             {/* <Notifications /> */}
             
-            {authUser && (
+            {/* {authUser && (
               <div className="flex items-center space-x-2">
                 <button
                   onClick={handleProfileClick}
@@ -194,7 +154,7 @@ const Navbar = () => {
                 </button>
                 
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>
