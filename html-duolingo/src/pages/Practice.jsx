@@ -66,6 +66,13 @@ function Practice() {
       topics: ['for', 'while', 'циклы', 'range()'],
       difficulty: 'Начинающий',
     },
+    {
+      id: 7,
+      title: 'Урок 7: Списки в Python',
+      description: 'Работа с коллекциями данных',
+      topics: ['Списки', 'массивы'],
+      difficulty: 'Средний',
+    },
     // {
     //   id: 7,
     //   title: 'Урок 7: Словари и множества',
@@ -152,16 +159,7 @@ function Practice() {
     // Объединяем завершенные и разблокированные уроки
     const availableLessonIds = [...new Set([...allCompleted, ...unlockedLessonIds])];
     
-    console.log('🔍 Проверка доступных уроков для практики:', {
-      completedLessons: completedFromArray,
-      lessonProgress,
-      completedFromProgress,
-      allCompleted,
-      unlockedLessonIds,
-      availableLessonIds,
-      availableLessons: availableLessons.map(l => ({ id: l.id, title: l.title })),
-      unlocked: availableLessons.filter(lesson => availableLessonIds.includes(lesson.id))
-    });
+   
     
     return availableLessons.filter(lesson => availableLessonIds.includes(lesson.id));
   }, [availableLessons, completedLessons, lessonProgress, isLessonLocked]);
